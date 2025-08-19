@@ -1,9 +1,9 @@
 # Deployment Architecture & IaC
 
-**Document Version:** 1.0
-**Status:** Final
-**Author:** Abhishek Shrivastav
-**Date:** August 12, 2025
+**Document Version:** 1.0  
+**Status:** Final  
+**Author:** Abhishek Shrivastav  
+**Date:** August 12, 2025  
 
 ---
 
