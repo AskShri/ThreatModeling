@@ -8,7 +8,7 @@ Welcome to the official API documentation for the Juice Shop application. This d
 
 - **OpenAPI Version**: 3.0.3
 - **Title**: OWASP Juice Shop API
-- **Version**: 1.4.
+- **Version**: 1.0
 - **Description**: This is the complete API specification for the OWASP Juice Shop, a modern e-commerce web application designed for security training.
 - **Contact**:
   - **Name**: Abhishek Shrivastav
