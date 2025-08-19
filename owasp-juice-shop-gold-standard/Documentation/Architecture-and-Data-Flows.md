@@ -1,27 +1,23 @@
-Architecture & Data Flow Diagrams: OWASP Juice Shop
+# Architecture & Data Flow Diagrams
 
-Document Version: 1.0
-Status: Final
-Author: Abhishek Shrivastav
+- **Document Version**: 1.4
+- **Status**: Final
+- **Author**: Abhishek Shrivastav
+- **Date**: August 12, 2025
 
-1. High-Level Architecture
+---
+
+## 1. High-Level Architecture
 
 The OWASP Juice Shop is a modern, monolithic web application built primarily in JavaScript/TypeScript. It follows a classic three-tier architecture.
-Client-Side (Frontend): A responsive Single Page Application (SPA) built with Angular. It runs entirely in the user's web browser and is responsible for all UI rendering and user interaction 1.
 
+-   **Client-Side (Frontend)**: A responsive Single Page Application (SPA) built with Angular. It runs entirely in the user's web browser and is responsible for all UI rendering and user interaction.
+-   **Server-Side (Backend)**: A RESTful API built with Node.js and the Express framework. It handles all business logic, data processing, and communication with the data stores. For administrative troubleshooting, the server exposes an endpoint to serve log files directly from the `/logs/` directory.
+-   **Data Stores (Hybrid Model)**:
+    -   **Primary Database**: A lightweight **SQLite** file-based database serves as the primary persistence layer for core transactional data, including users, products, and baskets.
+    -   **Document Store**: For unstructured data like product reviews, the application leverages a **MongoDB** document store.
 
-Server-Side (Backend): A RESTful API built with Node.js and the Express framework. It handles all business logic, data processing, and communication with the data stores 2. For administrative troubleshooting, the server exposes an endpoint to serve log files directly from the
-
-/logs/ directory.
-Data Stores (Hybrid Model):
-Primary Database: A lightweight SQLite file-based database serves as the primary persistence layer for core transactional data, including users, products, and baskets 3.
-
-
-Document Store: For unstructured and rapidly evolving data such as product reviews and user feedback, the application leverages a MongoDB document store to provide greater schema flexibility.
-
-Code snippet
-
-
+```mermaid
 graph TD
     subgraph "User's Browser"
         A[Angular Frontend]
@@ -34,43 +30,13 @@ graph TD
     A -- REST API Calls (HTTPS) --> B
     B -- SQL Queries --> C
     B -- NoSQL Queries --> D
-
-
-
-
-Key Trust Boundaries:
-Internet to Client: The user's interaction with the frontend.
-Client to Server: This is the most critical trust boundary. All data coming from the Angular client to the Node.js backend is considered untrusted and must be validated 4.
-
-
-Server to Data Stores: The boundary between the application logic and the persistence layers.
-
-2. Context Diagram (Level 0 DFD)
-
-This diagram shows the Juice Shop as a single process and illustrates its interactions with external entities.
-
-Code snippet
-
-graph TD
+Key Trust BoundariesInternet to Client: The user's interaction with the frontend.Client to Server: This is the most critical trust boundary. All data coming from the Angular client to the Node.js backend is considered untrusted and must be validated.Server to Data Stores: The boundary between the application logic and the persistence layers.2. Context Diagram (Level 0 DFD)This diagram shows the Juice Shop as a single process and illustrates its interactions with external entities.graph TD
     User[Customer / Visitor] -- Interacts via Browser --> JuiceShop((Juice Shop System))
     Admin[Administrator] -- Manages via Browser --> JuiceShop
     PartnerSystem[Partner Catalog System] -- XML Catalogs --> JuiceShop
     JuiceShop -- User Data / Orders --> DBs[(Application Databases)]
     JuiceShop -- "Transaction Hashes (undocumented)" --> Ledger[(Public Blockchain Ledger)]
-
-
-
-3. Detailed Data Flow Diagrams (DFDs)
-
-
-3.1 DFD for Product Search (User Story 2.1)
-
-This DFD shows how a user's search query is processed against the primary SQL database.
-
-Code snippet
-
-
-graph TD
+3. Detailed Data Flow Diagrams (DFDs)3.1 DFD for Product SearchThis DFD shows how a user's search query is processed against the primary SQL database.graph TD
     subgraph "Browser (Client)"
         Search[Search Bar]
     end
@@ -89,17 +55,7 @@ graph TD
     Products -- "5. Product Results" --> DBQuery
     DBQuery -- "6. Results" --> API
     API -- "7. JSON Response" --> Search
-
-
-
-3.2 DFD for Viewing Shopping Basket (User Story 3.2)
-
-This DFD illustrates how a user's basket is retrieved, highlighting a key access control checkpoint.
-
-Code snippet
-
-
-graph TD
+3.2 DFD for Viewing Shopping BasketThis DFD illustrates how a user's basket is retrieved, highlighting a key access control checkpoint.graph TD
     subgraph "Browser (Client)"
         ViewBasket[User clicks 'Your Basket']
     end
@@ -118,17 +74,7 @@ graph TD
     BasketItems -- "5. Basket Contents" --> GetData
     GetData -- "6. Formatted Data" --> BasketAPI
     BasketAPI -- "7. JSON Response" --> ViewBasket
-
-
-
-3.3 DFD for Updating Profile Picture from URL (User Story 1.4)
-
-This DFD shows the flow when a user provides a URL to an external image for their profile.
-
-Code snippet
-
-
-graph TD
+3.3 DFD for Updating Profile Picture from URLThis DFD shows the flow when a user provides a URL to an external image for their profile.graph TD
     subgraph "Browser (Client)"
         A[Profile Page URL Input]
     end
@@ -145,17 +91,7 @@ graph TD
     C -- "3. HTTP GET request to URL" --> E
     E -- "4. Image Data" --> C
     C -- "5. Raw Image Data" --> D
-
-
-
-3.4 DFD for Liking a Product Review (User Story 4.1)
-
-This DFD illustrates the asynchronous process for liking a review, which uses the MongoDB data store.
-
-Code snippet
-
-
-graph TD
+3.4 DFD for Liking a Product ReviewThis DFD illustrates the asynchronous process for liking a review, which uses the MongoDB data store.graph TD
     subgraph "Browser (Client)"
         A[User clicks 'Like']
     end
@@ -170,17 +106,7 @@ graph TD
     B -- "2. Immediate 200 OK Response" --> A
     B -- "3. Asynchronous Update Operation" --> C
     C -- "4. findOneAndUpdate({$inc: {likes: 1}})" --> D
-
-
-
-3.5 DFD for B2B Bulk Order Upload (User Story 5.2)
-
-This DFD shows how administrators can upload bulk orders in different formats.
-
-Code snippet
-
-
-graph TD
+3.5 DFD for B2B Bulk Order UploadThis DFD shows how administrators can upload bulk orders in different formats.graph TD
     subgraph "Browser (Admin)"
         A[Admin Uploads Order File]
     end
@@ -197,5 +123,6 @@ graph TD
     C -- "Technical Detail: Parser must process external entities in XML for catalog lookups." --> B
     C -- "3. Parsed Order Data" --> D
     D -- "4. INSERT Order Records" --> E
+
 
 
