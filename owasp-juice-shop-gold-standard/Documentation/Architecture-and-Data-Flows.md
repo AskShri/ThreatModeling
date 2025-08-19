@@ -10,7 +10,6 @@
 ## 1. High-Level Architecture
 
 The OWASP Juice Shop is a modern, monolithic web application built primarily in JavaScript/TypeScript. It follows a classic three-tier architecture.
-
 -   **Client-Side (Frontend)**: A responsive Single Page Application (SPA) built with Angular. It runs entirely in the user's web browser and is responsible for all UI rendering and user interaction.
 -   **Server-Side (Backend)**: A RESTful API built with Node.js and the Express framework. It handles all business logic, data processing, and communication with the data stores. For administrative troubleshooting, the server exposes an endpoint to serve log files directly from the `/logs/` directory.
 -   **Data Stores (Hybrid Model)**:
