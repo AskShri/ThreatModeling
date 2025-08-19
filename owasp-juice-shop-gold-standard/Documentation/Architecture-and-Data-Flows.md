@@ -1,20 +1,29 @@
 # Architecture & Data Flow Diagrams
 
-- **Document Version**: 1.4
-- **Status**: Final
-- **Author**: Abhishek Shrivastav
-- **Date**: August 12, 2025
+**Document Version:** 1.0  
+**Status:** Final  
+**Author:** Abhishek Shrivastav  
+**Date:** August 12, 2025
 
 ---
 
 ## 1. High-Level Architecture
 
-The OWASP Juice Shop is a modern, monolithic web application built primarily in JavaScript/TypeScript. It follows a classic three-tier architecture.
--   **Client-Side (Frontend)**: A responsive Single Page Application (SPA) built with Angular. It runs entirely in the user's web browser and is responsible for all UI rendering and user interaction.
--   **Server-Side (Backend)**: A RESTful API built with Node.js and the Express framework. It handles all business logic, data processing, and communication with the data stores. For administrative troubleshooting, the server exposes an endpoint to serve log files directly from the `/logs/` directory.
--   **Data Stores (Hybrid Model)**:
-    -   **Primary Database**: A lightweight **SQLite** file-based database serves as the primary persistence layer for core transactional data, including users, products, and baskets.
-    -   **Document Store**: For unstructured data like product reviews, the application leverages a **MongoDB** document store.
+The OWASP Juice Shop is a **modern, monolithic web application** following a classic **three-tier architecture**:
+
+- **Client-Side (Frontend):**
+  - Responsive SPA built with **Angular**.
+  - Runs in the user’s browser.
+  - Handles UI rendering & interactions.
+
+- **Server-Side (Backend):**
+  - RESTful API built with **Node.js & Express**.
+  - Handles business logic, data processing, and communication with data stores.
+  - Exposes `/logs/` endpoint for log file access.
+
+- **Data Stores (Hybrid Model):**
+  - **SQLite** (lightweight relational DB) for users, products, baskets.
+  - **MongoDB** for unstructured data (reviews, feedback).
 
 ```mermaid
 graph TD
@@ -29,99 +38,147 @@ graph TD
     A -- REST API Calls (HTTPS) --> B
     B -- SQL Queries --> C
     B -- NoSQL Queries --> D
-Key Trust BoundariesInternet to Client: The user's interaction with the frontend.Client to Server: This is the most critical trust boundary. All data coming from the Angular client to the Node.js backend is considered untrusted and must be validated.Server to Data Stores: The boundary between the application logic and the persistence layers.2. Context Diagram (Level 0 DFD)This diagram shows the Juice Shop as a single process and illustrates its interactions with external entities.graph TD
+```
+
+**Trust Boundaries:**
+- **Internet → Client** (user to frontend)
+- **Client → Server** (critical, must validate all inputs)
+- **Server → Data Stores** (app to DBs)
+
+---
+
+## 2. Context Diagram (Level 0 DFD)
+
+The Juice Shop as a single process and its external interactions:
+
+```mermaid
+graph TD
     User[Customer / Visitor] -- Interacts via Browser --> JuiceShop((Juice Shop System))
     Admin[Administrator] -- Manages via Browser --> JuiceShop
     PartnerSystem[Partner Catalog System] -- XML Catalogs --> JuiceShop
     JuiceShop -- User Data / Orders --> DBs[(Application Databases)]
     JuiceShop -- "Transaction Hashes (undocumented)" --> Ledger[(Public Blockchain Ledger)]
-3. Detailed Data Flow Diagrams (DFDs)3.1 DFD for Product SearchThis DFD shows how a user's search query is processed against the primary SQL database.graph TD
+```
+
+---
+
+## 3. Detailed Data Flow Diagrams (DFDs)
+
+### 3.1 Product Search (User Story 2.1)
+
+```mermaid
+graph TD
     subgraph "Browser (Client)"
         Search[Search Bar]
     end
     subgraph "Backend Server"
         API(API Endpoint: /rest/products/search)
-        Query{Process: Construct DB Query}
-        DBQuery(Process: Execute Search)
+        Query{Construct DB Query}
+        DBQuery(Execute Search)
     end
     subgraph "SQL Data Store"
         Products[(Products Table)]
     end
     Search -- "1. User enters raw search term" --> API
     API -- "2. Raw search term" --> Query
-    Query -- "3. SELECT * FROM Products WHERE name LIKE '%<term>%'" --> DBQuery
+    Query -- "3. SQL LIKE query" --> DBQuery
     DBQuery -- "4. Query" --> Products
     Products -- "5. Product Results" --> DBQuery
     DBQuery -- "6. Results" --> API
     API -- "7. JSON Response" --> Search
-3.2 DFD for Viewing Shopping BasketThis DFD illustrates how a user's basket is retrieved, highlighting a key access control checkpoint.graph TD
+```
+
+---
+
+### 3.2 Viewing Shopping Basket (User Story 3.2)
+
+```mermaid
+graph TD
     subgraph "Browser (Client)"
-        ViewBasket[User clicks 'Your Basket']
+        ViewBasket[Click 'Your Basket']
     end
     subgraph "Backend Server"
         BasketAPI(API Endpoint: /rest/basket/:basketId)
-        AuthCheck{Process: Verify User Ownership}
-        GetData(Process: Retrieve Basket Items)
+        AuthCheck{Verify User Ownership}
+        GetData(Retrieve Basket Items)
     end
     subgraph "SQL Data Store"
         BasketItems[(BasketItems Table)]
     end
-    ViewBasket -- "1. GET Request with basketId from URL" --> BasketAPI
-    BasketAPI -- "2. Authenticated User ID & basketId" --> AuthCheck
+    ViewBasket -- "1. GET Request" --> BasketAPI
+    BasketAPI -- "2. basketId + userId" --> AuthCheck
     AuthCheck -- "3. Authorization Check" --> GetData
-    GetData -- "4. SELECT * FROM BasketItems WHERE BasketId = ?" --> BasketItems
+    GetData -- "4. SELECT * FROM BasketItems" --> BasketItems
     BasketItems -- "5. Basket Contents" --> GetData
     GetData -- "6. Formatted Data" --> BasketAPI
     BasketAPI -- "7. JSON Response" --> ViewBasket
-3.3 DFD for Updating Profile Picture from URLThis DFD shows the flow when a user provides a URL to an external image for their profile.graph TD
+```
+
+---
+
+### 3.3 Updating Profile Picture from URL (User Story 1.4)
+
+```mermaid
+graph TD
     subgraph "Browser (Client)"
         A[Profile Page URL Input]
     end
     subgraph "Backend Server"
         B(API Endpoint: /api/user/profile-image-url)
-        C{Process: Fetch Image}
-        D(Process: Save & Associate Image)
+        C{Fetch Image}
+        D(Save & Associate Image)
     end
     subgraph "External Service"
         E[External Image Host]
     end
-    A -- "1. User submits image URL" --> B
+    A -- "1. Submit image URL" --> B
     B -- "2. Image URL" --> C
-    C -- "3. HTTP GET request to URL" --> E
+    C -- "3. HTTP GET to host" --> E
     E -- "4. Image Data" --> C
     C -- "5. Raw Image Data" --> D
-3.4 DFD for Liking a Product ReviewThis DFD illustrates the asynchronous process for liking a review, which uses the MongoDB data store.graph TD
+```
+
+---
+
+### 3.4 Liking a Product Review (User Story 4.1)
+
+```mermaid
+graph TD
     subgraph "Browser (Client)"
         A[User clicks 'Like']
     end
     subgraph "Backend Server"
         B(API Endpoint: /api/reviews/like)
-        C{Process: Update Like Count}
+        C{Update Like Count}
     end
     subgraph "NoSQL Data Store"
         D[(Reviews Collection)]
     end
-    A -- "1. API call with Review ID" --> B
-    B -- "2. Immediate 200 OK Response" --> A
-    B -- "3. Asynchronous Update Operation" --> C
-    C -- "4. findOneAndUpdate({$inc: {likes: 1}})" --> D
-3.5 DFD for B2B Bulk Order UploadThis DFD shows how administrators can upload bulk orders in different formats.graph TD
+    A -- "1. API call" --> B
+    B -- "2. 200 OK Response" --> A
+    B -- "3. Async Update" --> C
+    C -- "4. $inc likes" --> D
+```
+
+---
+
+### 3.5 B2B Bulk Order Upload (User Story 5.2)
+
+```mermaid
+graph TD
     subgraph "Browser (Admin)"
-        A[Admin Uploads Order File]
+        A[Admin Uploads File]
     end
     subgraph "Backend Server"
         B(API Endpoint: /api/b2b/order)
-        C{Process: Parse Uploaded File}
-        D(Process: Create Order Records)
+        C{Parse File}
+        D(Create Orders)
     end
     subgraph "Data Store"
         E[(Orders Table)]
     end
-    A -- "1. Submits JSON or XML file" --> B
+    A -- "1. Upload JSON/XML" --> B
     B -- "2. Raw File Data" --> C
-    C -- "Technical Detail: Parser must process external entities in XML for catalog lookups." --> B
-    C -- "3. Parsed Order Data" --> D
-    D -- "4. INSERT Order Records" --> E
-
-
-
+    C -- "(Processes external entities in XML)" --> B
+    C -- "3. Parsed Data" --> D
+    D -- "4. INSERT into Orders" --> E
