@@ -1,4 +1,4 @@
-# Prioritized Threats (Evidence-Backed)
+# Evidence-Backed Threats List
 
 This document provides a **comprehensive, evidence-backed threat catalog** identified during the Security Design Review (SDR) and Threat Modeling exercise for the OWASP Juice Shop benchmark. Each entry maps directly to supporting artifacts, observed vulnerabilities, and realistic exploitation justifications.
 
